@@ -1,0 +1,87 @@
+﻿@*@@using OnlineShopPage.Models@*@
+@using MyProject.Controllers
+
+@model List<Category>
+
+<style>
+    select {
+        width: 200px;
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    #productList {
+        margin-top: 20px;
+    }
+
+        #productList div {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+</style>
+<h2>Categories</h2>
+<select id="categoryDropdown">
+    <option value="">Select a category</option>
+    @foreach (var category in Model)
+    {
+        <option value="@category.Id">@category.Name</option>
+    }
+</select>
+<h2>Subcategories</h2>
+<select id="subcategoryDropdown">
+    <option value="">Select a subcategory</option>
+</select>
+<h2>Products</h2>
+<div id="productList"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(function() {
+
+        // get the subcategories for the selected category
+        $('#categoryDropdown').change(function() {
+            var categoryId = $(this).val();
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetSubcategories", "Supermarket")',
+                data: { categoryId: categoryId },
+                success: function(data) {
+                    
+                    $('#subcategoryDropdown').find('option').remove();
+
+                    // 
+                    $.each(data, function(index, subcategory) {
+                        $('#subcategoryDropdown').append($('<option></option>').val(subcategory.Id).html(subcategory.Name));
+                    });
+                },
+                error: function() {
+                    alert('An error occurred while getting subcategories.');
+                }
+            });
+        });
+
+        //get products for selected category
+        $('#subcategoryDropdown').change(function() {
+            var subcategoryId = $(this).val();
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetProducts", "Supermarket")',
+                data: { subcategoryId: subcategoryId },
+
+                success: function(data) {
+                    
+                    $('#productList').empty();
+
+                    
+                    $.each(data, function(index, product) {
+                        var productHtml = '<div>' + product.Name + ' - ' + product.Price + '</div>';
+                        $('#productList').append(productHtml);
+                    });
+                },
+                error: function() {
+                    alert('An error occurred while getting products.');
+                }
+            });
+        });
+    });
+</script>
